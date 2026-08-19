@@ -1,5 +1,5 @@
 name: T3 Code
-version: "0.1.3"
+version: "0.1.4"
 slug: t3code
 description: Run T3 Code in headless server mode for remote pairing from the T3 Code desktop app
 url: https://github.com/wiggo-dev/ha-t3code/tree/main/t3code

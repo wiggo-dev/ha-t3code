@@ -34,13 +34,57 @@ Home Assistant caches custom add-on repositories locally. **Rebuild alone does n
 
 1. Open **Settings → Add-ons → Add-on store**.
 2. Open the **⋮** menu (top right) → **Check for updates** (refreshes git repositories).
-3. Open the **T3 Code** add-on page and confirm the version (currently **0.1.3**).
+3. Open the **T3 Code** add-on page and confirm the version (currently **0.1.4**).
 4. Click **Update** if shown, otherwise **Rebuild**, then restart the add-on.
-5. In the log, look for `T3 Code add-on version 0.1.3` near startup.
+5. In the log, look for `T3 Code add-on version 0.1.4` near startup.
 
 If the version in logs is still `0.1.0`, the supervisor has not pulled the latest repository yet.
 
 The add-on bootstraps a T3 project for Home Assistant's `/config` directory on startup, so the remote workspace should open there instead of `~/`.
+
+## Faster iteration while developing
+
+### Local Docker loop (recommended)
+
+On your laptop, exercise the same container image without Home Assistant:
+
+```bash
+./scripts/dev-run.sh
+```
+
+This builds `t3code/Dockerfile`, mounts `.dev/config` → `/config`, `.dev/data` → `/data`, and publishes port `3773`. Re-run after `run.sh` or `Dockerfile` changes.
+
+Supervisor API warnings in the log are normal outside Home Assistant; the script still starts T3 using defaults from `.dev/data/options.json`.
+
+Optional env vars:
+
+```bash
+PORT=3773 ADVERTISE_HOST=127.0.0.1 CONFIG_DIR=/path/to/config ./scripts/dev-run.sh
+```
+
+### Home Assistant: skip full rebuild for `run.sh` only
+
+If you only changed `run.sh`, you can copy it into the supervisor's cached add-on checkout and restart — no git pull or image rebuild required:
+
+1. SSH into Home Assistant OS (`login` at the console, or the Terminal & SSH add-on).
+2. Find the repo checkout:
+
+   ```bash
+   grep -rl 'ha-t3code' /mnt/data/supervisor/addons/git/ 2>/dev/null
+   ls /mnt/data/supervisor/addons/git/
+   ```
+
+3. Copy the updated script (adjust the hash directory):
+
+   ```bash
+   docker cp /path/on/ha/run.sh addon_t3code:/run.sh
+   ```
+
+   Or from a machine with the repo cloned, `scp t3code/run.sh root@homeassistant:/tmp/run.sh` then `docker cp /tmp/run.sh addon_t3code:/run.sh`.
+
+4. Restart the add-on from the UI.
+
+You still need **Check for updates → Rebuild** when `Dockerfile`, `config.yaml`, or version change.
 
 ## Configure and start
 
