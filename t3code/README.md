@@ -34,11 +34,13 @@ Home Assistant caches custom add-on repositories locally. **Rebuild alone does n
 
 1. Open **Settings → Add-ons → Add-on store**.
 2. Open the **⋮** menu (top right) → **Check for updates** (refreshes git repositories).
-3. Open the **T3 Code** add-on page and confirm the version (currently **0.1.2**).
+3. Open the **T3 Code** add-on page and confirm the version (currently **0.1.3**).
 4. Click **Update** if shown, otherwise **Rebuild**, then restart the add-on.
-5. In the log, look for `T3 Code add-on version 0.1.2` near startup.
+5. In the log, look for `T3 Code add-on version 0.1.3` near startup.
 
 If the version in logs is still `0.1.0`, the supervisor has not pulled the latest repository yet.
+
+The add-on bootstraps a T3 project for Home Assistant's `/config` directory on startup, so the remote workspace should open there instead of `~/`.
 
 ## Configure and start
 

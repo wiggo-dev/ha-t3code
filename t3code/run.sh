@@ -10,6 +10,7 @@ CONFIGURED_ADVERTISE_HOST="$(bashio::config 'advertise_host')"
 mkdir -p "${T3_STATE_DIR}"
 
 export T3CODE_HOME="${T3_STATE_DIR}"
+export HOME="${T3_WORKDIR}"
 
 resolve_advertise_host() {
   local supervisor_ip=""
@@ -57,11 +58,44 @@ rewrite_pairing_output() {
   done
 }
 
+wait_for_t3_server() {
+  local attempt=0
+
+  while ! wget -q -O /dev/null "http://127.0.0.1:${T3_PORT}/.well-known/t3/environment" 2>/dev/null; do
+    attempt=$((attempt + 1))
+    if [[ "${attempt}" -gt 120 ]]; then
+      bashio::log.warning "Timed out waiting for T3 Code to become ready"
+      return 1
+    fi
+    sleep 1
+  done
+}
+
+print_pairing_info() {
+  wait_for_t3_server || return 0
+
+  if bashio::var.has_value "${ADVERTISE_HOST}"; then
+    t3 pair --base-dir "${T3_STATE_DIR}" 2>&1 | rewrite_pairing_output "${ADVERTISE_HOST}" || true
+  else
+    t3 pair --base-dir "${T3_STATE_DIR}" || true
+  fi
+}
+
+run_t3_server() {
+  t3 start \
+    --host "${T3_HOST}" \
+    --port "${T3_PORT}" \
+    --base-dir "${T3_STATE_DIR}" \
+    --no-browser \
+    --auto-bootstrap-project-from-cwd \
+    "${T3_WORKDIR}"
+}
+
 ADVERTISE_HOST="$(resolve_advertise_host || true)"
 
 bashio::log.info "T3 Code add-on version $(bashio::addon.version)"
-bashio::log.info "Starting T3 Code headless server"
-bashio::log.info "Working directory: ${T3_WORKDIR}"
+bashio::log.info "Starting T3 Code server"
+bashio::log.info "Default workspace: ${T3_WORKDIR}"
 bashio::log.info "State directory: ${T3_STATE_DIR}"
 bashio::log.info "Listening on ${T3_HOST}:${T3_PORT}"
 
@@ -73,18 +107,14 @@ fi
 
 bashio::log.info "Pairing URL and token will appear below once the server is ready"
 
+print_pairing_info &
+
+cd "${T3_WORKDIR}"
+
 if bashio::var.has_value "${ADVERTISE_HOST}"; then
   set -o pipefail
-  t3 serve \
-    --host "${T3_HOST}" \
-    --port "${T3_PORT}" \
-    --base-dir "${T3_STATE_DIR}" \
-    "${T3_WORKDIR}" 2>&1 | rewrite_pairing_output "${ADVERTISE_HOST}"
+  run_t3_server 2>&1 | rewrite_pairing_output "${ADVERTISE_HOST}"
   exit "${PIPESTATUS[0]}"
 fi
 
-exec t3 serve \
-  --host "${T3_HOST}" \
-  --port "${T3_PORT}" \
-  --base-dir "${T3_STATE_DIR}" \
-  "${T3_WORKDIR}"
+exec run_t3_server
