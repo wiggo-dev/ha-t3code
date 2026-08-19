@@ -36,6 +36,7 @@ Default options are suitable for LAN pairing:
 | --- | --- | --- |
 | `host` | `0.0.0.0` | Network interface to bind |
 | `port` | `3773` | T3 Code HTTP/WebSocket port |
+| `advertise_host` | _(auto)_ | Optional LAN IP or hostname to show in logs when pairing URLs use Docker internal addresses |
 
 1. Install the add-on.
 2. Start it.
@@ -83,9 +84,10 @@ The image installs Node.js 22 and compiles native dependencies for the T3 CLI. C
 
 ### Cannot pair from another machine
 
-- Confirm the add-on is running and port `3773` is listed under the add-on **Info** tab.
+- The add-on uses **host network** so T3 binds on your Home Assistant host's LAN interfaces, not the internal `172.30.x.x` Docker network.
+- If logs still show a `172.30.x.x` pairing URL, build the LAN URL yourself: `http://<home-assistant-lan-ip>:3773/pair#token=<token-from-logs>`
+- Or set **advertise_host** in add-on options to your HA host IP or `homeassistant.local` for clearer log hints.
 - Confirm your client device can reach `<home-assistant-ip>:3773` on the LAN.
-- Use the pairing URL exactly as printed in the logs.
 
 ### SSH remote launch vs this add-on
 

@@ -1,5 +1,5 @@
 name: T3 Code
-version: "0.1.0"
+version: "0.1.1"
 slug: t3code
 description: Run T3 Code in headless server mode for remote pairing from the T3 Code desktop app
 url: https://github.com/wiggo-dev/ha-t3code/tree/main/t3code
@@ -10,6 +10,7 @@ startup: application
 init: false
 boot: auto
 homeassistant: 0.92.0b2
+host_network: true
 ports:
   3773/tcp: 3773
 ports_description:
@@ -21,6 +22,8 @@ map:
 options:
   host: 0.0.0.0
   port: 3773
+  advertise_host: ""
 schema:
   host: str
   port: port
+  advertise_host: str?
