@@ -28,6 +28,18 @@ Cursor provider integration inside the container is planned for a later phase.
 
 For local development before publishing, you can also add the repository from a local path or fork using the same URL pattern after pushing your branch.
 
+## Update the add-on after repo changes
+
+Home Assistant caches custom add-on repositories locally. **Rebuild alone does not pull the latest commit from GitHub.**
+
+1. Open **Settings → Add-ons → Add-on store**.
+2. Open the **⋮** menu (top right) → **Check for updates** (refreshes git repositories).
+3. Open the **T3 Code** add-on page and confirm the version (currently **0.1.2**).
+4. Click **Update** if shown, otherwise **Rebuild**, then restart the add-on.
+5. In the log, look for `T3 Code add-on version 0.1.2` near startup.
+
+If the version in logs is still `0.1.0`, the supervisor has not pulled the latest repository yet.
+
 ## Configure and start
 
 Default options are suitable for LAN pairing:
