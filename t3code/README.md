@@ -111,6 +111,7 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 - `cursor-agent` must be on PATH inside the container
 - Enable Cursor in T3 Settings (not auto-enabled)
 - Rebuild after upgrading the add-on so the CLI is present
+- **API key alone is not enough today:** T3 still treats Cursor as logged out unless `cursor-agent about` has a user email ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)). Workaround: one-time `cursor-agent login` in the add-on (see above). Tracked on the [wayfinder map](https://github.com/wiggo-dev/ha-t3code/issues/1) until upstream fixes it.
 
 ### Cannot pair
 
