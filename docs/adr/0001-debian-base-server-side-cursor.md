@@ -1,0 +1,3 @@
+# Use a Debian base and bake in Cursor for Server-side Cursor
+
+Phase 2 needs the Cursor CLI (`cursor-agent`) inside the Add-on so T3 can run agents against the Workspace. Official Cursor CLI requires glibc and does not run on Alpine, so we switch the Add-on to official `ghcr.io/home-assistant/base-debian`, install Cursor at image build time, prefer `CURSOR_API_KEY` (with login-file fallback under persistent `/data`), and enable the Cursor provider in T3 only when auth is present. We rejected a glibc sidecar and host installs because HA add-ons are single-container and the HA OS host is not a general-purpose Node/Cursor environment. Phase 2 scope is Cursor only.
