@@ -21,8 +21,8 @@ Running the Cursor CLI (`cursor-agent`) inside the Add-on so T3 can use the Curs
 _Avoid_: local Cursor, desktop Cursor, Cursor app
 
 **Provider home**:
-The Add-on's persistent home directory for Provider CLIs (auth files and CLI state), kept outside the Workspace so credentials are not mixed into Home Assistant config.
-_Avoid_: Cursor home, workspace home, HOME=/config (when meaning Provider state)
+The Add-on's persistent directory for Provider CLI auth and XDG state (`/data/home`), kept outside the Workspace. Process `HOME` remains the Workspace so `~` means `/config`.
+_Avoid_: Cursor home, workspace home, HOME=/data/home (when meaning the shell home / `~`)
 
 **Skill**:
 An on-demand procedure document (`SKILL.md`) the Provider can load for a task. Bundled Home Assistant Skills and operator-added user Skills share one Agent Skills tree in the Workspace.

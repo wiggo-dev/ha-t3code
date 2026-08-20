@@ -12,13 +12,25 @@ CURSOR_API_KEY_OPT="$(bashio::config 'cursor_api_key' || true)"
 T3_HOST="${T3_HOST:-0.0.0.0}"
 T3_PORT="${T3_PORT:-3773}"
 
-mkdir -p "${T3_STATE_DIR}" "${PROVIDER_HOME}"
+mkdir -p "${T3_STATE_DIR}" \
+  "${PROVIDER_HOME}/.config" \
+  "${PROVIDER_HOME}/.cache" \
+  "${PROVIDER_HOME}/.local/share" \
+  "${PROVIDER_HOME}/.cursor"
 
-# Provider CLIs (Cursor) use a persistent home outside the Workspace.
-# T3 state stays under /data/t3; Workspace remains /config.
+# Workspace is HOME so ~ and default folders resolve to /config (Phase 1 behaviour).
+# Cursor auth/cache/state stay on persistent Provider home via XDG_* (ADR-0002).
 export T3CODE_HOME="${T3_STATE_DIR}"
-export HOME="${PROVIDER_HOME}"
+export HOME="${T3_WORKDIR}"
+export XDG_CONFIG_HOME="${PROVIDER_HOME}/.config"
+export XDG_CACHE_HOME="${PROVIDER_HOME}/.cache"
+export XDG_DATA_HOME="${PROVIDER_HOME}/.local/share"
 export AGENT_CLI_CREDENTIAL_STORE=file
+
+# Prefer Provider-home cli-config over a Workspace-local ~/.cursor when present.
+if [[ ! -e "${T3_WORKDIR}/.cursor" ]]; then
+  ln -sfn "${PROVIDER_HOME}/.cursor" "${T3_WORKDIR}/.cursor"
+fi
 
 if bashio::var.has_value "${CURSOR_API_KEY_OPT}" && [[ "${CURSOR_API_KEY_OPT}" != "null" ]]; then
   export CURSOR_API_KEY="${CURSOR_API_KEY_OPT}"
@@ -111,7 +123,7 @@ log_cursor_auth_status() {
     bashio::log.info "Cursor auth ready: login file present at ${auth_file}"
     bashio::log.info "Enable the Cursor provider in T3 Settings if it is not already on"
   else
-    bashio::log.warning "Cursor auth not configured: set cursor_api_key in add-on options, or run 'cursor-agent login' with HOME=${PROVIDER_HOME}"
+    bashio::log.warning "Cursor auth not configured: set cursor_api_key in add-on options, or run 'cursor-agent login' with XDG_CONFIG_HOME=${PROVIDER_HOME}/.config"
   fi
 
   if command -v cursor-agent >/dev/null 2>&1; then

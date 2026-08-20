@@ -26,8 +26,8 @@ Phase 1 pairing behaviour is unchanged.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.2.0**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.2.0`
+2. Open **T3 Code**, confirm version (**0.2.1**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.2.1`
 
 ## Configure and start
 
@@ -43,7 +43,9 @@ Phase 1 pairing behaviour is unchanged.
 3. If using an API key, set **cursor_api_key** in Configuration and restart.
 4. In the T3 desktop app, enable the **Cursor** provider in Settings once auth is ready (the add-on does not force-enable it).
 
-Login-file fallback: exec into the add-on and run `cursor-agent login` (credentials land under `/data/home/.config/cursor/`). API key wins when both are present.
+Login-file fallback: from a host shell with Docker access, run `cursor-agent login` inside the add-on with `XDG_CONFIG_HOME=/data/home/.config` and `HOME=/config` (credentials land under `/data/home/.config/cursor/`). API key wins when both are present.
+
+`HOME` is `/config` so `~` is the Workspace. Cursor config/cache use Provider home via `XDG_*` under `/data/home`.
 
 ## Home Assistant Skills
 
@@ -86,9 +88,9 @@ Home Assistant host :3773
         ▼
 Add-on: t3 start … /config
         │
-        ├── /config              ← Workspace (+ .agents/skills)
+        ├── /config              ← Workspace (+ HOME / `~`)
         ├── /data/t3             ← T3 state
-        └── /data/home           ← Provider home (Cursor auth)
+        └── /data/home           ← Provider home (XDG Cursor auth/cache)
 ```
 
 ## Security notes
