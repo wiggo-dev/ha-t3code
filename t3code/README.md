@@ -1,117 +1,79 @@
 # T3 Code Home Assistant Add-on
 
-Run [T3 Code](https://github.com/pingdotgg/t3code) in headless server mode on Home Assistant OS so you can pair from the T3 Code desktop app over your LAN.
+Run [T3 Code](https://github.com/pingdotgg/t3code) in headless server mode on Home Assistant OS so you can pair from the T3 Code desktop app over your LAN, with **Server-side Cursor** and bundled **Home Assistant Skills** against `/config`.
 
-This add-on uses `t3 serve` (not SSH remote launch). Pairing details — connection string, token, pairing URL, and QR code — are printed in the add-on logs.
+## Phase 2 scope
 
-## Phase 1 scope
+- Debian (glibc) Add-on image with Cursor CLI (`cursor-agent`) baked in — [ADR-0001](../docs/adr/0001-debian-base-server-side-cursor.md)
+- Optional `cursor_api_key` + login-file fallback under Provider home `/data/home` — [ADR-0002](../docs/adr/0002-cursor-credential-schema.md)
+- Five Home Assistant Skills digest-synced into `/config/.agents/skills/` — [ADR-0003](../docs/adr/0003-workspace-agent-skills.md)
+- Workspace remains `/config`; T3 state under `/data/t3`
 
-- Install and start the T3 Code CLI server inside a Home Assistant add-on
-- Bind to `0.0.0.0:3773` by default
-- Use `/config` (Home Assistant configuration) as the T3 Code working directory
-- Persist T3 runtime state under the add-on data directory (`/data/t3` in the container)
-
-Cursor provider integration inside the container is planned for a later phase.
+Phase 1 pairing behaviour is unchanged.
 
 ## Install the repository
 
 1. In Home Assistant, open **Settings → Add-ons → Add-on store**.
 2. Open the **⋮** menu (top right) → **Repositories**.
-3. Add this repository URL:
+3. Add:
 
    ```
    https://github.com/wiggo-dev/ha-t3code
    ```
 
-4. Click **Add**, then refresh the add-on store.
-5. Open **T3 Code** under the new repository category and install it.
+4. Click **Add**, refresh the store, install **T3 Code**.
 
-For local development before publishing, you can also add the repository from a local path or fork using the same URL pattern after pushing your branch.
+## Update after repo changes
 
-## Update the add-on after repo changes
+1. Add-on store → **⋮** → **Check for updates**
+2. Open **T3 Code**, confirm version (**0.2.0**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.2.0`
 
-Home Assistant caches custom add-on repositories locally. **Rebuild alone does not pull the latest commit from GitHub.**
+## Configure and start
 
-1. Open **Settings → Add-ons → Add-on store**.
-2. Open the **⋮** menu (top right) → **Check for updates** (refreshes git repositories).
-3. Open the **T3 Code** add-on page and confirm the version (currently **0.1.4**).
-4. Click **Update** if shown, otherwise **Rebuild**, then restart the add-on.
-5. In the log, look for `T3 Code add-on version 0.1.4` near startup.
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `host` | `0.0.0.0` | Bind address |
+| `port` | `3773` | T3 HTTP/WebSocket port |
+| `advertise_host` | _(auto)_ | LAN host shown in pairing URLs |
+| `cursor_api_key` | _(empty)_ | Optional Cursor API key (`CURSOR_API_KEY`) |
 
-If the version in logs is still `0.1.0`, the supervisor has not pulled the latest repository yet.
+1. Install and start the add-on.
+2. Open **Log**: pairing URL/token, Skills sync line, and Cursor auth-ready (or a warning if unset).
+3. If using an API key, set **cursor_api_key** in Configuration and restart.
+4. In the T3 desktop app, enable the **Cursor** provider in Settings once auth is ready (the add-on does not force-enable it).
 
-The add-on bootstraps a T3 project for Home Assistant's `/config` directory on startup, so the remote workspace should open there instead of `~/`.
+Login-file fallback: exec into the add-on and run `cursor-agent login` (credentials land under `/data/home/.config/cursor/`). API key wins when both are present.
 
-## Faster iteration while developing
+## Home Assistant Skills
 
-### Local Docker loop (recommended)
+On each start the add-on syncs bundled Skills into:
 
-On your laptop, exercise the same container image without Home Assistant:
+```text
+/config/.agents/skills/<name>/SKILL.md
+```
+
+Add your own Skills as extra directories there (survives HA backups). If you edit a bundled Skill, the add-on keeps your copy and logs a warning; delete your edited file to restore the shipped version on the next start.
+
+Bundled set: `home-assistant-configuration`, `home-assistant-troubleshooting`, `home-assistant-dashboard-ui`, `home-assistant-zigbee-esphome`, `home-assistant-development` (light-adapted from OpenCode; no MCP/`hab` runtime).
+
+## Faster local iteration
 
 ```bash
 ./scripts/dev-run.sh
 ```
 
-This builds `t3code/Dockerfile`, mounts `.dev/config` → `/config`, `.dev/data` → `/data`, and publishes port `3773`. Re-run after `run.sh` or `Dockerfile` changes.
-
-Supervisor API warnings in the log are normal outside Home Assistant; the script still starts T3 using defaults from `.dev/data/options.json`.
-
-Optional env vars:
+Builds `t3code/Dockerfile`, mounts `.dev/config` → `/config`, `.dev/data` → `/data`, publishes port `3773`.
 
 ```bash
-PORT=3773 ADVERTISE_HOST=127.0.0.1 CONFIG_DIR=/path/to/config ./scripts/dev-run.sh
+PORT=3773 ADVERTISE_HOST=127.0.0.1 CURSOR_API_KEY=… ./scripts/dev-run.sh
 ```
 
-### Home Assistant: skip full rebuild for `run.sh` only
+Skills digest-sync smoke test (no Docker):
 
-If you only changed `run.sh`, you can copy it into the supervisor's cached add-on checkout and restart — no git pull or image rebuild required:
-
-1. SSH into Home Assistant OS (`login` at the console, or the Terminal & SSH add-on).
-2. Find the repo checkout:
-
-   ```bash
-   grep -rl 'ha-t3code' /mnt/data/supervisor/addons/git/ 2>/dev/null
-   ls /mnt/data/supervisor/addons/git/
-   ```
-
-3. Copy the updated script (adjust the hash directory):
-
-   ```bash
-   docker cp /path/on/ha/run.sh addon_t3code:/run.sh
-   ```
-
-   Or from a machine with the repo cloned, `scp t3code/run.sh root@homeassistant:/tmp/run.sh` then `docker cp /tmp/run.sh addon_t3code:/run.sh`.
-
-4. Restart the add-on from the UI.
-
-You still need **Check for updates → Rebuild** when `Dockerfile`, `config.yaml`, or version change.
-
-## Configure and start
-
-Default options are suitable for LAN pairing:
-
-| Option | Default | Purpose |
-| --- | --- | --- |
-| `host` | `0.0.0.0` | Network interface to bind |
-| `port` | `3773` | T3 Code HTTP/WebSocket port |
-| `advertise_host` | _(auto)_ | Optional LAN IP or hostname to show in logs when pairing URLs use Docker internal addresses |
-
-1. Install the add-on.
-2. Start it.
-3. Open the **Log** tab and look for the pairing URL, token, and QR code printed by `t3 serve`.
-
-Treat pairing URLs and tokens like passwords. Anyone on your LAN who can reach the port can pair until credentials expire or are revoked.
-
-## Pair from the T3 Code desktop app
-
-1. Ensure your laptop/phone is on the same LAN as Home Assistant.
-2. Find your Home Assistant host IP (for example `192.168.1.42`).
-3. In the T3 Code desktop app, add the remote environment using either:
-   - the full pairing URL from the add-on logs, or
-   - the host `192.168.1.42:3773` plus the pairing token from the logs.
-4. After pairing, the remote workspace uses Home Assistant's `/config` directory.
-
-If you need a fresh pairing token without restarting the add-on, you can exec into the running container and run `t3 pair` (advanced).
+```bash
+./scripts/test-deploy-skills.sh
+```
 
 ## Architecture
 
@@ -122,38 +84,39 @@ T3 Code Desktop App (LAN)
 Home Assistant host :3773
         │
         ▼
-Add-on container: t3 serve --host 0.0.0.0 --port 3773 /config
+Add-on: t3 start … /config
         │
-        ├── /config  ← Home Assistant configuration (workspace)
-        └── /data/t3 ← persistent T3 state (pairing sessions, userdata)
+        ├── /config              ← Workspace (+ .agents/skills)
+        ├── /data/t3             ← T3 state
+        └── /data/home           ← Provider home (Cursor auth)
 ```
 
 ## Security notes
 
-- This add-on exposes T3 Code on your LAN only by default. Do not port-forward it to the public internet without additional protection.
-- Prefer Tailscale or a trusted HTTPS reverse proxy if you need access outside your home network later.
-- Revoke stale pairing credentials with `t3 auth` if needed.
+- LAN only by default. Do not port-forward without extra protection.
+- Prefer Tailscale or a trusted HTTPS reverse proxy for off-LAN access (still fog — see the wayfinder map).
+- Treat pairing tokens and `cursor_api_key` as secrets.
 
 ## Troubleshooting
 
-### Add-on fails to build
+### Build fails
 
-The image installs Node.js 22 and compiles native dependencies for the T3 CLI. Check the build log for npm or compiler errors.
+Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors in the build log.
 
-### Cannot pair from another machine
+### Cursor provider unhealthy in T3
 
-- The add-on uses **host network** so T3 binds on your Home Assistant host's LAN interfaces, not the internal `172.30.x.x` Docker network.
-- If logs still show a `172.30.x.x` pairing URL, build the LAN URL yourself: `http://<home-assistant-lan-ip>:3773/pair#token=<token-from-logs>`
-- Or set **advertise_host** in add-on options to your HA host IP or `homeassistant.local` for clearer log hints.
-- Confirm your client device can reach `<home-assistant-ip>:3773` on the LAN.
+- Log should say auth ready (API key or login file)
+- `cursor-agent` must be on PATH inside the container
+- Enable Cursor in T3 Settings (not auto-enabled)
+- Rebuild after upgrading the add-on so the CLI is present
 
-### SSH remote launch vs this add-on
+### Cannot pair
 
-T3 Code's SSH remote environment feature expects a general-purpose Linux host with Node on `PATH` in non-interactive shells. Home Assistant OS does not provide that. This add-on avoids SSH launch and runs `t3 serve` in a container instead.
+- Host network binds on the HA LAN IP
+- Set **advertise_host** if logs show a Docker-internal address
+- Confirm `<ha-ip>:3773` is reachable on the LAN
 
-## Development
-
-Repository layout:
+## Development layout
 
 ```text
 repository.yaml
@@ -161,7 +124,7 @@ t3code/
   config.yaml
   Dockerfile
   run.sh
+  deploy-skills.py
+  skills/*/SKILL.md
   README.md
 ```
-
-After changing files, rebuild the add-on from the Home Assistant add-on page (**Rebuild** / reinstall depending on your Supervisor version).
