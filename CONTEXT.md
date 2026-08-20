@@ -20,10 +20,14 @@ _Avoid_: model, LLM, backend (when meaning the CLI process)
 Running the Cursor CLI (`cursor-agent`) inside the Add-on so T3 can use the Cursor provider against the Workspace.
 _Avoid_: local Cursor, desktop Cursor, Cursor app
 
+**Provider home**:
+The Add-on's persistent home directory for Provider CLIs (auth files and CLI state), kept outside the Workspace so credentials are not mixed into Home Assistant config.
+_Avoid_: Cursor home, workspace home, HOME=/config (when meaning Provider state)
+
 **Skill**:
-An on-demand procedure document (`SKILL.md`) the Provider can load for a task. Bundled Home Assistant Skills come from the OpenCode HA add-on set; user Skills are extra procedures the operator adds.
+An on-demand procedure document (`SKILL.md`) the Provider can load for a task. Bundled Home Assistant Skills and operator-added user Skills share one Agent Skills tree in the Workspace.
 _Avoid_: prompt, agent instruction, MCP tool (those are different artifacts)
 
 **Home Assistant Skills**:
-The five bundled Skills for HA work: configuration, troubleshooting, dashboard-ui, zigbee-esphome, and development (origin: OpenCode HA add-on docs).
+The five bundled Skills for HA work: configuration, troubleshooting, dashboard-ui, zigbee-esphome, and development (origin: OpenCode HA add-on docs). Shipped by the Add-on; operator edits of those copies are preserved across upgrades.
 _Avoid_: OpenCode skills (when meaning only those five without naming them)
