@@ -31,3 +31,11 @@ _Avoid_: prompt, agent instruction, MCP tool (those are different artifacts)
 **Home Assistant Skills**:
 The five bundled Skills for HA work: configuration, troubleshooting, dashboard-ui, zigbee-esphome, and development (origin: OpenCode HA add-on docs). Shipped by the Add-on; operator edits of those copies are preserved across upgrades.
 _Avoid_: OpenCode skills (when meaning only those five without naming them)
+
+**Thin evidence**:
+Read-only facts Server-side Cursor may gather for Home Assistant work without paste-dumping: Workspace files, Core REST, Supervisor REST, and operator exports under `/config/.t3code/exports/` (ADR-0005).
+_Avoid_: live control, MCP tools (when meaning evidence sources)
+
+**Pin matrix**:
+The known-good `t3` + Cursor CLI (`cursor-agent`) versions baked into one Add-on image. Operators get a new pair only by updating the Add-on.
+_Avoid_: stack, toolchain, dependencies (when meaning this pair)
