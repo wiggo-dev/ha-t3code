@@ -5,7 +5,19 @@ description: Build or change Home Assistant dashboards — Lovelace views, cards
 
 # Dashboards and UI
 
+**Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
+
 This Add-on does **not** ship `hab` dashboard CLI or screenshot MCP tools. Work through YAML-mode files when available; for storage-mode dashboards, guide the operator via the HA UI (or raw `.storage` only if they explicitly accept that risk).
+
+## Thin evidence (ADR-0005 tiers)
+
+Dashboard work is mostly **configuration**: files + docs. Confirm entity IDs from the Workspace before inventing them. When thin Core REST is available, **recommend** a quick existence/state check for entities named in the draft.
+
+1. **File baseline** — `configuration.yaml` / `ui-lovelace.yaml` / included dashboard YAML; themes under `themes/`
+2. **Core REST** — optional entity existence/state when drafting cards
+3. **Supervisor REST** — not needed for dashboard YAML
+
+**Fallback:** operator paste (States / UI) or `/config/.t3code/exports/`. No long `curl` recipes here. Thin REST may not be in the running image yet.
 
 ## Which mechanism this installation uses
 
@@ -18,7 +30,7 @@ List dashboards from `configuration.yaml` / `ui-lovelace.yaml` / included files 
 
 ## Building a view
 
-Do not invent entity IDs — confirm entities from the Workspace, operator paste, or Developer Tools → States.
+Do not invent entity IDs — confirm from Workspace files, thin REST when available, or operator paste (Developer Tools → States).
 
 Standard cards: `entities`, `tile`, `button`, `light`, `thermostat`, `media-control`, `weather-forecast`, `history-graph`, `statistics-graph`, `gauge`, `picture-elements`, `map`, `markdown`, `todo-list`, `area`, plus layout cards `grid`, `vertical-stack`, `horizontal-stack`, `sections`.
 
@@ -40,4 +52,4 @@ No headless screenshot tool is bundled. After an approved change:
 
 ## Themes
 
-Themes live in `themes/` and are referenced from `frontend:` in `configuration.yaml`. Adding one usually needs restart or `frontend.reload_themes`; say which and ask first.
+Themes live in `themes/` and are referenced from `frontend:` in `configuration.yaml`. Adding one usually needs the operator to restart or reload themes — say which and let them apply it.

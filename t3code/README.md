@@ -28,8 +28,8 @@ Phase 1 pairing behaviour is unchanged on the LAN.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.3.0**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.3.0` plus **Pin matrix** lines for `t3` and `cursor-agent`
+2. Open **T3 Code**, confirm version (**0.3.1**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.3.1` plus **Pin matrix** lines for `t3` and `cursor-agent`
 
 That Update/Rebuild is the **only** supported way to change the pin matrix. Previous Add-on version is break-glass rollback. Do not run `agent update` or `npm install -g t3` inside the container.
 
@@ -140,8 +140,8 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 
 ## Known limitations
 
-- **Thin logs:** the agent can read Workspace files under `/config` (including `home-assistant.log` when present). Live Core/Supervisor REST evidence is not shipped in this release; paste excerpts or drop files under `/config` when needed.
-- **Control plane:** no MCP/`hab`, no agent-initiated reload/restart/device control. Apply changes in the Home Assistant UI after the agent proposes them.
+- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files under `/config`, then thin Core/Supervisor REST when available, then paste or `/config/.t3code/exports/`. Live REST plumbing is not shipped in this release — file baseline + paste/exports until it is.
+- **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.
 - **Not supported:** public HTTPS reverse proxy, HA Ingress, or port-forwarding `3773` (see [Remote access](#remote-access)).
 
 ## Development layout

@@ -41,11 +41,11 @@ On start, bundled Skills sync into `/config/.agents/skills/<name>/SKILL.md`. Ope
 
 ## Update / rebuild
 
-Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.0** in the log (`T3 Code add-on version 0.3.0`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
+Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.1** in the log (`T3 Code add-on version 0.3.1`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
 
 Update/Rebuild is the only supported upgrade path for the pin matrix. Previous Add-on version is break-glass. Do not run `agent update` or `npm install -g t3` inside the container.
 
 ## Known limitations
 
-- **Thin logs:** the agent can read Workspace files under `/config` (including `home-assistant.log` when present). Live Core/Supervisor REST evidence is not shipped in this release; paste excerpts or drop files under `/config` when needed.
-- **Control plane:** no MCP/`hab`, no agent-initiated reload/restart/device control. Apply changes in the Home Assistant UI after the agent proposes them.
+- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files under `/config`, then thin Core/Supervisor REST when available, then paste or `/config/.t3code/exports/`. Live REST plumbing is not shipped in this release — file baseline + paste/exports until it is.
+- **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.

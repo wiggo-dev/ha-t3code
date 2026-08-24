@@ -36,6 +36,10 @@ _Avoid_: OpenCode skills (when meaning only those five without naming them)
 Read-only facts Server-side Cursor may gather for Home Assistant work without paste-dumping: Workspace files, Core REST, Supervisor REST, and operator exports under `/config/.t3code/exports/` (ADR-0005).
 _Avoid_: live control, MCP tools (when meaning evidence sources)
 
+**Skill depth ceiling**:
+How deep Home Assistant Skills may go: ask → gather thin evidence → propose → operator applies reload/restart/UI; never agent-driven service calls or device control (ADR-0008).
+_Avoid_: full MCP parity, agent applies changes (when meaning the Skill workflow)
+
 **Pin matrix**:
 The known-good `t3` + Cursor CLI (`cursor-agent`) versions baked into one Add-on image. Operators get a new pair only by updating the Add-on.
 _Avoid_: stack, toolchain, dependencies (when meaning this pair)

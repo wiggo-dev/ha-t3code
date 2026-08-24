@@ -7,6 +7,13 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.1] - 2026-08-24
+
+### Changed
+
+- Home Assistant Skills encode ADR-0008 gather → propose → operator-applies loop and name ADR-0005 evidence tiers
+- Known limitations: Skill depth / thin evidence language aligned with ADR-0005/0006/0008
+
 ## [0.3.0] - 2026-08-24
 
 ### Added
