@@ -1,0 +1,52 @@
+# Changelog
+
+All notable changes to this Home Assistant add-on are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
+mentioned only when they matter to operators.
+
+## [0.3.0] - 2026-08-24
+
+### Added
+
+- Pin matrix at image build: pinned `t3` + Cursor CLI lab tarball URL with checksums (ADR-0007)
+- PATH wrapper injects `--disable-auto-update` for `cursor-agent` / `agent`
+- Startup log fingerprint: `t3 --version` and `cursor-agent --version` next to the Add-on version
+- Maintainer `scripts/bump-pins.sh` refreshes both pins together and patch-bumps the Add-on version
+
+### Changed
+
+- Operator upgrade path is Add-on Update/Rebuild only; previous Add-on version is break-glass rollback
+- Known limitations: drop “no pin matrix”; document Update/Rebuild as the only supported upgrade
+
+## [0.2.2] - 2026-08-24
+
+### Added
+
+- Supervisor `icon.png` and `logo.png`
+- `DOCS.md` for the Supervisor Configuration / Documentation tab
+- Root MIT `LICENSE`
+- `hassio_api: true` so LAN pairing host detection can use Supervisor network info as a fallback
+
+### Documentation
+
+- Root README purpose and pointer into `t3code/`
+- Known limitations for pin/upgrade and thin log evidence (not shipped in this release)
+
+## [0.2.1] - 2026-08-20
+
+### Added
+
+- Server-side Cursor (`cursor-agent`) in the Debian add-on image
+- Optional `cursor_api_key` with login-file fallback under Provider home `/data/home`
+- Bundled Home Assistant Skills digest-synced into `/config/.agents/skills/`
+- Tailscale / private-mesh pairing via `advertise_host` (LAN remains the default)
+
+## [0.2.0] - 2026-08-19
+
+### Added
+
+- Phase 1: T3 Code headless server on Home Assistant OS
+- Host-network bind on port 3773 and LAN pairing URL rewrite

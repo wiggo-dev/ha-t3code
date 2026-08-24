@@ -8,8 +8,10 @@ Run [T3 Code](https://github.com/pingdotgg/t3code) in headless server mode on Ho
 - Optional `cursor_api_key` + login-file fallback under Provider home `/data/home` — [ADR-0002](../docs/adr/0002-cursor-credential-schema.md)
 - Five Home Assistant Skills digest-synced into `/config/.agents/skills/` — [ADR-0003](../docs/adr/0003-workspace-agent-skills.md)
 - Workspace remains `/config`; T3 state under `/data/t3`
+- Off-LAN: LAN + Tailscale (private mesh) only — [ADR-0004](../docs/adr/0004-tailscale-off-lan.md)
+- Pin matrix: known-good `t3` + Cursor CLI baked at build; Update/Rebuild is the upgrade path — [ADR-0007](../docs/adr/0007-t3-cursor-pin-matrix.md)
 
-Phase 1 pairing behaviour is unchanged.
+Phase 1 pairing behaviour is unchanged on the LAN.
 
 ## Install the repository
 
@@ -26,8 +28,12 @@ Phase 1 pairing behaviour is unchanged.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.2.1**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.2.1`
+2. Open **T3 Code**, confirm version (**0.3.0**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.3.0` plus **Pin matrix** lines for `t3` and `cursor-agent`
+
+That Update/Rebuild is the **only** supported way to change the pin matrix. Previous Add-on version is break-glass rollback. Do not run `agent update` or `npm install -g t3` inside the container.
+
+Maintainers refresh both pins together with `./scripts/bump-pins.sh` (patch-bumps the Add-on version and CHANGELOG), then commit and push.
 
 ## Configure and start
 
@@ -35,7 +41,7 @@ Phase 1 pairing behaviour is unchanged.
 | --- | --- | --- |
 | `host` | `0.0.0.0` | Bind address |
 | `port` | `3773` | T3 HTTP/WebSocket port |
-| `advertise_host` | _(auto)_ | LAN host shown in pairing URLs |
+| `advertise_host` | _(auto)_ | Host shown in pairing URLs (LAN IP by default; set to Tailscale MagicDNS/IP off-LAN) |
 | `cursor_api_key` | _(empty)_ | Optional Cursor API key (`CURSOR_API_KEY`) |
 
 1. Install and start the add-on.
@@ -46,6 +52,8 @@ Phase 1 pairing behaviour is unchanged.
 Login-file fallback: from a host shell with Docker access, run `cursor-agent login` inside the add-on with `XDG_CONFIG_HOME=/data/home/.config` and `HOME=/config` (credentials land under `/data/home/.config/cursor/`). API key wins when both are present.
 
 `HOME` is `/config` so `~` is the Workspace. Cursor config/cache use Provider home via `XDG_*` under `/data/home`.
+
+Supervisor Configuration-tab copy of this options/how-to lives in [`DOCS.md`](DOCS.md) — keep the two aligned.
 
 ## Home Assistant Skills
 
@@ -77,10 +85,22 @@ Skills digest-sync smoke test (no Docker):
 ./scripts/test-deploy-skills.sh
 ```
 
+## Remote access
+
+**Supported:** home LAN, or **Tailscale** (private mesh). Put the Home Assistant host on your tailnet (e.g. the community Tailscale add-on), join the T3 desktop from a machine on the same tailnet, and pair to the HA host’s Tailscale MagicDNS name (or Tailscale IP) on port `3773`.
+
+1. Install/configure Tailscale on the HA host and on the client.
+2. In this Add-on’s options, set **advertise_host** to the HA host’s MagicDNS name (preferred) or Tailscale IP.
+3. Restart the Add-on and use the pairing URL from the Log (rewritten to that host).
+
+An equivalent private mesh (e.g. Headscale) is fine if it gives the same trust model — no public listener. This Add-on does not bundle or configure Tailscale; `host_network` already exposes `:3773` on the host.
+
+**Not supported:** port-forwarding `3773`, public HTTPS reverse proxies, or HA Ingress as a way to reach this Add-on. Those are out of scope — see [ADR-0004](../docs/adr/0004-tailscale-off-lan.md).
+
 ## Architecture
 
 ```text
-T3 Code Desktop App (LAN)
+T3 Code Desktop App (LAN or Tailscale)
         │
         ▼
 Home Assistant host :3773
@@ -95,8 +115,7 @@ Add-on: t3 start … /config
 
 ## Security notes
 
-- LAN only by default. Do not port-forward without extra protection.
-- Prefer Tailscale or a trusted HTTPS reverse proxy for off-LAN access (still fog — see the wayfinder map).
+- LAN or Tailscale only. Do not port-forward `3773` or expose the Add-on on the public internet.
 - Treat pairing tokens and `cursor_api_key` as secrets.
 
 ## Troubleshooting
@@ -115,19 +134,38 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 
 ### Cannot pair
 
-- Host network binds on the HA LAN IP
-- Set **advertise_host** if logs show a Docker-internal address
-- Confirm `<ha-ip>:3773` is reachable on the LAN
+- Host network binds on the HA LAN IP (or Tailscale IP when the host is on the mesh)
+- Set **advertise_host** if logs show a Docker-internal address, or for off-LAN Tailscale MagicDNS/IP
+- Confirm `<advertise_host>:3773` is reachable from the desktop (LAN or same tailnet)
+
+## Known limitations
+
+- **Thin logs:** the agent can read Workspace files under `/config` (including `home-assistant.log` when present). Live Core/Supervisor REST evidence is not shipped in this release; paste excerpts or drop files under `/config` when needed.
+- **Control plane:** no MCP/`hab`, no agent-initiated reload/restart/device control. Apply changes in the Home Assistant UI after the agent proposes them.
+- **Not supported:** public HTTPS reverse proxy, HA Ingress, or port-forwarding `3773` (see [Remote access](#remote-access)).
 
 ## Development layout
 
 ```text
+LICENSE
+README.md
 repository.yaml
+scripts/
+  bump-pins.sh
+  dev-run.sh
+  test-bump-pins.sh
+  test-cursor-agent-wrapper.sh
+  test-deploy-skills.sh
 t3code/
   config.yaml
   Dockerfile
   run.sh
+  cursor-agent-wrapper.sh
   deploy-skills.py
   skills/*/SKILL.md
   README.md
+  DOCS.md
+  CHANGELOG.md
+  icon.png
+  logo.png
 ```

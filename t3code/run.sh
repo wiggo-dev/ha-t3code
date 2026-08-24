@@ -154,6 +154,16 @@ sync_home_assistant_skills() {
 ADVERTISE_HOST="$(resolve_advertise_host || true)"
 
 bashio::log.info "T3 Code add-on version $(bashio::addon.version 2>/dev/null || echo 'dev')"
+if command -v t3 >/dev/null 2>&1; then
+  bashio::log.info "Pin matrix: t3 $(t3 --version 2>/dev/null || echo 'unknown')"
+else
+  bashio::log.error "t3 not found on PATH"
+fi
+if command -v cursor-agent >/dev/null 2>&1; then
+  bashio::log.info "Pin matrix: cursor-agent $(cursor-agent --version 2>/dev/null || echo 'unknown')"
+else
+  bashio::log.error "cursor-agent not found on PATH"
+fi
 bashio::log.info "Starting T3 Code server"
 bashio::log.info "Default workspace: ${T3_WORKDIR}"
 bashio::log.info "State directory: ${T3_STATE_DIR}"
