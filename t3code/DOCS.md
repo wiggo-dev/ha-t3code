@@ -41,7 +41,7 @@ On start, bundled Skills sync into `/config/.agents/skills/<name>/SKILL.md`. Ope
 
 ## Update / rebuild
 
-Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.2** in the log (`T3 Code add-on version 0.3.2`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
+Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.3** in the log (`T3 Code add-on version 0.3.3`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
 
 Update/Rebuild is the only supported upgrade path for the pin matrix. Previous Add-on version is break-glass. Do not run `agent update` or `npm install -g t3` inside the container.
 
@@ -59,19 +59,23 @@ curl -fsS -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
 
 Useful paths: `/states`, `/states/<entity_id>`, `/error_log`, `/history/period/<start>`, `/logbook/<start>`. Full shapes: [HA REST API](https://developers.home-assistant.io/docs/api/rest/).
 
-**Supervisor REST** (`hassio_api`) — base `http://supervisor`:
+**Supervisor REST** (`hassio_api` + `hassio_role: homeassistant`) — base `http://supervisor`:
 
 ```bash
 curl -fsS -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
   "http://supervisor/core/logs"
 ```
 
-Also: `/addons/<slug>/logs`, `/resolution/info`, host/supervisor health endpoints. Core container journal is `/core/logs`; Core API error text is `/core/api/error_log` — different sources.
+Core container journal is `/core/logs`. That path needs the `homeassistant` Supervisor role (the default role only allows `/*/info` and returns **403**). This is **not** fixed by `journald:` (that only mounts the host journal into the container for `journalctl`).
+
+Core API error text is `/core/api/error_log` — a different source (often more useful for YAML/integration failures).
+
+Also readable with this role: other `GET /core/…` info endpoints. **Do not** `POST` `/core/restart`, `/core/stop`, `/core/update`, etc. — Skills and ADR-0006 require the operator to apply those in the UI. Add-on journal via `/addons/<slug>/logs` needs a higher role (`manager`) and is not enabled here; use file baseline / exports for add-on logs.
 
 **Exports:** drop files under `/config/.t3code/exports/` (created on Add-on start). If you version `/config` in git, ignore that path.
 
 ## Known limitations
 
 - **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`. Short endpoint pointers: see [Thin evidence](#thin-evidence-read-only) above.
-- **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.
+- **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. `hassio_role: homeassistant` unlocks `GET /core/logs` and also *could* allow Core mutate POSTs — Skills forbid those; the operator applies reload/restart/UI after approving edits.
 - **Cursor API-key auth:** API key alone is not enough today ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)); use one-time `cursor-agent login` as well (see [Cursor auth](#cursor-auth)).
