@@ -10,6 +10,7 @@ Run [T3 Code](https://github.com/pingdotgg/t3code) in headless server mode on Ho
 - Workspace remains `/config`; T3 state under `/data/t3`
 - Off-LAN: LAN + Tailscale (private mesh) only — [ADR-0004](../docs/adr/0004-tailscale-off-lan.md)
 - Pin matrix: known-good `t3` + Cursor CLI baked at build; Update/Rebuild is the upgrade path — [ADR-0007](../docs/adr/0007-t3-cursor-pin-matrix.md)
+- Thin evidence: Workspace files + read-only Core/Supervisor REST (`homeassistant_api` / `hassio_api`) — [ADR-0005](../docs/adr/0005-thin-log-evidence-sources.md); Skill depth — [ADR-0008](../docs/adr/0008-skill-depth-ceiling.md)
 
 Phase 1 pairing behaviour is unchanged on the LAN.
 
@@ -28,8 +29,8 @@ Phase 1 pairing behaviour is unchanged on the LAN.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.3.1**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.3.1` plus **Pin matrix** lines for `t3` and `cursor-agent`
+2. Open **T3 Code**, confirm version (**0.3.2**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.3.2` plus **Pin matrix** lines for `t3` and `cursor-agent`
 
 That Update/Rebuild is the **only** supported way to change the pin matrix. Previous Add-on version is break-glass rollback. Do not run `agent update` or `npm install -g t3` inside the container.
 
@@ -140,7 +141,7 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 
 ## Known limitations
 
-- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files under `/config`, then thin Core/Supervisor REST when available, then paste or `/config/.t3code/exports/`. Live REST plumbing is not shipped in this release — file baseline + paste/exports until it is.
+- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`. Short endpoint pointers: [DOCS.md](DOCS.md#thin-evidence-read-only).
 - **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.
 - **Not supported:** public HTTPS reverse proxy, HA Ingress, or port-forwarding `3773` (see [Remote access](#remote-access)).
 

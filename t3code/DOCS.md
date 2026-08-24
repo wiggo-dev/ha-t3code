@@ -41,11 +41,36 @@ On start, bundled Skills sync into `/config/.agents/skills/<name>/SKILL.md`. Ope
 
 ## Update / rebuild
 
-Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.1** in the log (`T3 Code add-on version 0.3.1`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
+Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.2** in the log (`T3 Code add-on version 0.3.2`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
 
 Update/Rebuild is the only supported upgrade path for the pin matrix. Previous Add-on version is break-glass. Do not run `agent update` or `npm install -g t3` inside the container.
 
+## Thin evidence (read-only)
+
+Agents gather live facts without paste-dumping ([ADR-0005](https://github.com/wiggo-dev/ha-t3code/blob/main/docs/adr/0005-thin-log-evidence-sources.md)). Auth is the Supervisor-injected `SUPERVISOR_TOKEN` bearer. Prefer Workspace files first; keep history/logbook windows short. **GET only** — never service calls, reload, restart, or device control from the agent ([ADR-0006](https://github.com/wiggo-dev/ha-t3code/blob/main/docs/adr/0006-control-plane-scope.md)).
+
+**Core REST** (`homeassistant_api`) — base `http://supervisor/core/api`:
+
+```bash
+curl -fsS -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+  -H "Content-Type: application/json" \
+  "http://supervisor/core/api/states/sensor.example"
+```
+
+Useful paths: `/states`, `/states/<entity_id>`, `/error_log`, `/history/period/<start>`, `/logbook/<start>`. Full shapes: [HA REST API](https://developers.home-assistant.io/docs/api/rest/).
+
+**Supervisor REST** (`hassio_api`) — base `http://supervisor`:
+
+```bash
+curl -fsS -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+  "http://supervisor/core/logs"
+```
+
+Also: `/addons/<slug>/logs`, `/resolution/info`, host/supervisor health endpoints. Core container journal is `/core/logs`; Core API error text is `/core/api/error_log` — different sources.
+
+**Exports:** drop files under `/config/.t3code/exports/` (created on Add-on start). If you version `/config` in git, ignore that path.
+
 ## Known limitations
 
-- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files under `/config`, then thin Core/Supervisor REST when available, then paste or `/config/.t3code/exports/`. Live REST plumbing is not shipped in this release — file baseline + paste/exports until it is.
+- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`.
 - **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.

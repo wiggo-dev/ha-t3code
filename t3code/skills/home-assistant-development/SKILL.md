@@ -16,10 +16,10 @@ This Add-on does **not** consume or expose OpenCode’s HA MCP server. Native HA
 Development work is mostly **files + docs**. Use higher tiers when debugging a running integration or add-on:
 
 1. **File baseline** — `custom_components/`, manifests, local add-on sources, `home-assistant.log`
-2. **Core REST** — entity/state checks after the operator reloads or restarts
-3. **Supervisor REST** — add-on logs, resolution/info, host health when diagnosing Supervisor issues
+2. **Core REST** — entity/state checks after the operator reloads or restarts (`SUPERVISOR_TOKEN` → `http://supervisor/core/api`)
+3. **Supervisor REST** — add-on logs, resolution/info, host health (`http://supervisor`)
 
-**Fallback:** operator paste or `/config/.t3code/exports/`. No long `curl` recipes here. Thin REST may not be in the running image yet.
+**Fallback:** operator paste or `/config/.t3code/exports/`. Short recipes: add-on DOCS.
 
 ## Custom integrations
 
@@ -58,4 +58,4 @@ Add-on basics:
 1. Read existing code and manifests before editing
 2. Show the diff; wait for approval
 3. Tell the operator about restart / rebuild requirements (they apply)
-4. Suggest how to verify (logs via file baseline or Supervisor REST when available, smoke config entry, Supervisor rebuild)
+4. Suggest how to verify (logs via file baseline or Supervisor REST, smoke config entry, Supervisor rebuild)
