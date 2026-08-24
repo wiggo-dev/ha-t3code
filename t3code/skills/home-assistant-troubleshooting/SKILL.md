@@ -15,7 +15,7 @@ Prefer this order for **runtime diagnosis**. Do not paste-dump as the happy path
 
 1. **File baseline** (Workspace `/config`): `home-assistant.log`, `.HA_VERSION`, read-only `.storage/` registries, YAML via `grep` / `yq` / `jq`
 2. **Core REST** — read-only states, history, logbook, `/error_log` via `http://supervisor/core/api` and `SUPERVISOR_TOKEN`
-3. **Supervisor REST** — Core container journal `/core/logs`, add-on logs, `/resolution/info`, host/supervisor health via `http://supervisor`
+3. **Supervisor REST** — Core container journal `/core/logs` (needs `hassio_role: homeassistant`), `/resolution/info`, other allowed `GET`s via `http://supervisor`. Prefer Core `/api/error_log` for integration/YAML failures. Do **not** POST restart/stop/update.
 
 **Fallback:** ask the operator for a short paste, or for a drop under `/config/.t3code/exports/`. Name the tier you need; short `curl` shapes live in add-on DOCS — do not paste long recipes into this Skill.
 

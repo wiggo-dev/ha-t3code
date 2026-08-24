@@ -30,8 +30,8 @@ LAN pairing behaviour is unchanged from Phase 1.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.3.2**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.3.2` plus **Pin matrix** lines for `t3` and `cursor-agent`
+2. Open **T3 Code**, confirm version (**0.3.3**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.3.3` plus **Pin matrix** lines for `t3` and `cursor-agent`
 
 That Update/Rebuild is the **only** supported way to change the pin matrix. Previous Add-on version is break-glass rollback. Do not run `agent update` or `npm install -g t3` inside the container.
 
@@ -150,7 +150,7 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 ## Known limitations
 
 - **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`. Short endpoint pointers: [DOCS.md](DOCS.md#thin-evidence-read-only).
-- **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.
+- **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. `hassio_role: homeassistant` unlocks `GET /core/logs` and also *could* allow Core mutate POSTs — Skills forbid those; the operator applies reload/restart/UI after approving edits.
 - **Cursor API-key auth:** API key alone is not enough today ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)); use one-time `cursor-agent login` as well (see [Configure and start](#configure-and-start)).
 - **Not supported:** public HTTPS reverse proxy, HA Ingress, or port-forwarding `3773` (see [Remote access](#remote-access)).
 

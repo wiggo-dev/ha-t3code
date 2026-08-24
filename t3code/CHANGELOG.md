@@ -7,6 +7,16 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.3] - 2026-08-24
+
+### Added
+
+- `hassio_role: homeassistant` so Supervisor `/core/logs` (Core journal) is allowed — default role only permits `/*/info` (403 otherwise)
+
+### Changed
+
+- DOCS: clarify `/core/logs` vs Core `/api/error_log`, and that the role unlock is GET-only by Skill policy (ADR-0006)
+
 ## [0.3.2] - 2026-08-24
 
 ### Added
