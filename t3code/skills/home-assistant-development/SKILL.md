@@ -58,4 +58,4 @@ Add-on basics:
 1. Read existing code and manifests before editing
 2. Show the diff; wait for approval
 3. Tell the operator about restart / rebuild requirements (they apply)
-4. Suggest how to verify (logs via file baseline or Supervisor REST when available, smoke config entry, Supervisor rebuild)
+4. Suggest how to verify (logs via file baseline or Supervisor REST, smoke config entry, Supervisor rebuild)

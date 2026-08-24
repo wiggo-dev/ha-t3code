@@ -30,7 +30,7 @@ For Core/OS/Supervisor/add-on updates, use Settings → System → Updates — a
 Build the picture from tier order:
 
 - YAML references: `grep -rn "entity_id" /config --include='*.yaml'` (and packages)
-- Entity/device state via thin Core REST when available, else operator paste (Developer Tools → States)
+- Entity/device state via Core REST, else operator paste (Developer Tools → States)
 - ZHA: integrations UI + device page
 - Zigbee2MQTT: its add-on config / `configuration.yaml` / network map in the Z2M UI
 - ESPHome: device YAML under the ESPHome add-on’s config path when mapped; otherwise ask the operator to paste
