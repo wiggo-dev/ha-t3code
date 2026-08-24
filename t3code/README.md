@@ -2,17 +2,18 @@
 
 Run [T3 Code](https://github.com/pingdotgg/t3code) in headless server mode on Home Assistant OS so you can pair from the T3 Code desktop app over your LAN, with **Server-side Cursor** and bundled **Home Assistant Skills** against `/config`.
 
-## Phase 2 scope
+## Scope
 
 - Debian (glibc) Add-on image with Cursor CLI (`cursor-agent`) baked in — [ADR-0001](../docs/adr/0001-debian-base-server-side-cursor.md)
 - Optional `cursor_api_key` + login-file fallback under Provider home `/data/home` — [ADR-0002](../docs/adr/0002-cursor-credential-schema.md)
 - Five Home Assistant Skills digest-synced into `/config/.agents/skills/` — [ADR-0003](../docs/adr/0003-workspace-agent-skills.md)
 - Workspace remains `/config`; T3 state under `/data/t3`
 - Off-LAN: LAN + Tailscale (private mesh) only — [ADR-0004](../docs/adr/0004-tailscale-off-lan.md)
-- Pin matrix: known-good `t3` + Cursor CLI baked at build; Update/Rebuild is the upgrade path — [ADR-0007](../docs/adr/0007-t3-cursor-pin-matrix.md)
 - Thin evidence: Workspace files + read-only Core/Supervisor REST (`homeassistant_api` / `hassio_api`) — [ADR-0005](../docs/adr/0005-thin-log-evidence-sources.md); Skill depth — [ADR-0008](../docs/adr/0008-skill-depth-ceiling.md)
+- Thin control plane: agent proposes; operator applies reload/restart/UI — [ADR-0006](../docs/adr/0006-control-plane-scope.md)
+- Pin matrix: known-good `t3` + Cursor CLI baked at build; Update/Rebuild is the upgrade path — [ADR-0007](../docs/adr/0007-t3-cursor-pin-matrix.md)
 
-Phase 1 pairing behaviour is unchanged on the LAN.
+LAN pairing behaviour is unchanged from Phase 1.
 
 ## Install the repository
 
@@ -66,7 +67,11 @@ On each start the add-on syncs bundled Skills into:
 
 Add your own Skills as extra directories there (survives HA backups). If you edit a bundled Skill, the add-on keeps your copy and logs a warning; delete your edited file to restore the shipped version on the next start.
 
-Bundled set: `home-assistant-configuration`, `home-assistant-troubleshooting`, `home-assistant-dashboard-ui`, `home-assistant-zigbee-esphome`, `home-assistant-development` (light-adapted from OpenCode; no MCP/`hab` runtime).
+Bundled set: `home-assistant-configuration`, `home-assistant-troubleshooting`, `home-assistant-dashboard-ui`, `home-assistant-zigbee-esphome`, `home-assistant-development` (light-adapted from OpenCode; no MCP/`hab` runtime). Skills follow ask → gather thin evidence → propose → operator applies ([ADR-0008](../docs/adr/0008-skill-depth-ceiling.md)).
+
+## Thin evidence
+
+Agents can gather live facts without paste-dumping: Workspace files first, then read-only Core/Supervisor REST via `SUPERVISOR_TOKEN`, then operator drops under `/config/.t3code/exports/`. Short endpoint pointers and example `curl` shapes: [DOCS.md](DOCS.md#thin-evidence-read-only) ([ADR-0005](../docs/adr/0005-thin-log-evidence-sources.md)).
 
 ## Faster local iteration
 
@@ -110,8 +115,11 @@ Home Assistant host :3773
 Add-on: t3 start … /config
         │
         ├── /config              ← Workspace (+ HOME / `~`)
+        ├── /config/.t3code/exports/  ← operator evidence drops
         ├── /data/t3             ← T3 state
         └── /data/home           ← Provider home (XDG Cursor auth/cache)
+        │
+        └── SUPERVISOR_TOKEN → Core + Supervisor REST (read-only)
 ```
 
 ## Security notes
@@ -131,7 +139,7 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 - `cursor-agent` must be on PATH inside the container
 - Enable Cursor in T3 Settings (not auto-enabled)
 - Rebuild after upgrading the add-on so the CLI is present
-- **API key alone is not enough today:** T3 still treats Cursor as logged out unless `cursor-agent about` has a user email ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)). Workaround: one-time `cursor-agent login` in the add-on (see above). Tracked on the [wayfinder map](https://github.com/wiggo-dev/ha-t3code/issues/1) until upstream fixes it.
+- **API key alone is not enough today:** T3 still treats Cursor as logged out unless `cursor-agent about` has a user email ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)). Workaround: one-time `cursor-agent login` in the add-on (see above). Watch until upstream fixes it (noted on the closed [wayfinder map](https://github.com/wiggo-dev/ha-t3code/issues/1)).
 
 ### Cannot pair
 
@@ -143,6 +151,7 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 
 - **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`. Short endpoint pointers: [DOCS.md](DOCS.md#thin-evidence-read-only).
 - **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.
+- **Cursor API-key auth:** API key alone is not enough today ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)); use one-time `cursor-agent login` as well (see [Configure and start](#configure-and-start)).
 - **Not supported:** public HTTPS reverse proxy, HA Ingress, or port-forwarding `3773` (see [Remote access](#remote-access)).
 
 ## Development layout
