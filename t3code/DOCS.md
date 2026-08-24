@@ -72,5 +72,6 @@ Also: `/addons/<slug>/logs`, `/resolution/info`, host/supervisor health endpoint
 
 ## Known limitations
 
-- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`.
+- **Thin evidence / Skill depth (ADR-0005 / ADR-0008):** Home Assistant Skills follow ask → gather → propose → operator applies. Agents prefer Workspace files, then thin Core/Supervisor REST (`SUPERVISOR_TOKEN`), then paste or `/config/.t3code/exports/`. Short endpoint pointers: see [Thin evidence](#thin-evidence-read-only) above.
 - **Control plane (ADR-0006):** no MCP/`hab`, no agent-initiated service calls, reload, restart, or device control. The operator applies reload/restart/UI after approving edits.
+- **Cursor API-key auth:** API key alone is not enough today ([t3code#7244](https://github.com/pingdotgg/t3code/issues/7244)); use one-time `cursor-agent login` as well (see [Cursor auth](#cursor-auth)).
