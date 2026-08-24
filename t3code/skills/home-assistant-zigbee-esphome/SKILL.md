@@ -12,10 +12,10 @@ This Add-on does **not** ship `zigporter`, `hab`, or firmware-watch MCP tools.
 ## Thin evidence (ADR-0005 tiers)
 
 1. **File baseline** — YAML references under `/config`, Z2M/ESPHome config the Workspace can see, `.HA_VERSION`
-2. **Core REST** — when available, entity/device state for the IDs under discussion (recommend, don’t require, for rename/draft work)
-3. **Supervisor REST** — add-on logs (Z2M, ESPHome) when diagnosing those add-ons
+2. **Core REST** — entity/device state for the IDs under discussion (`SUPERVISOR_TOKEN` → `http://supervisor/core/api`); recommend, don’t require, for rename/draft work
+3. **Supervisor REST** — add-on logs (Z2M, ESPHome) when diagnosing those add-ons (`http://supervisor/addons/<slug>/logs`)
 
-**Fallback:** operator paste from Developer Tools / ZHA / Z2M / ESPHome UI, or drop under `/config/.t3code/exports/`. No long `curl` recipes here. Thin REST may not be in the running image yet.
+**Fallback:** operator paste from Developer Tools / ZHA / Z2M / ESPHome UI, or drop under `/config/.t3code/exports/`. Short recipes: add-on DOCS.
 
 Signal issues (weak LQI, bad parent, offline router) usually show in ZHA/Z2M UIs — ask for that evidence rather than guessing.
 

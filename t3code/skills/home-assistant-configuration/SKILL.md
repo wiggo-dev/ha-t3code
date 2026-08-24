@@ -11,7 +11,7 @@ Show the change, wait for explicit approval, change nothing else.
 
 ## Thin evidence (ADR-0005 tiers)
 
-For **configuration / improvement** (nothing broken), files + current docs are enough to draft. When thin Core REST is available and a draft names entities, **recommend** (do not require) a quick existence/state check before writing.
+For **configuration / improvement** (nothing broken), files + current docs are enough to draft. When a draft names entities, **recommend** (do not require) a quick existence/state check via Core REST (`SUPERVISOR_TOKEN` → `http://supervisor/core/api/states/<entity_id>`).
 
 Use higher tiers only when diagnosis is needed (hand off to `home-assistant-troubleshooting`):
 
@@ -19,9 +19,9 @@ Use higher tiers only when diagnosis is needed (hand off to `home-assistant-trou
 2. **Core REST** — entity existence/state (optional check when drafting)
 3. **Supervisor REST** — usually not needed for pure config work
 
-**Fallback:** operator paste or `/config/.t3code/exports/`. Do not embed long `curl` recipes in this Skill.
+**Fallback:** operator paste or `/config/.t3code/exports/`. Short recipes: add-on DOCS — do not embed long `curl` blocks here.
 
-This Add-on does **not** ship OpenCode MCP tools or `hab`. Thin REST may not be in the running image yet.
+This Add-on does **not** ship OpenCode MCP tools or `hab`. Thin REST is read-only evidence only.
 
 ## Before you write anything
 

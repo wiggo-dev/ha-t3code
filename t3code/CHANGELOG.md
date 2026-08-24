@@ -7,6 +7,18 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.2] - 2026-08-24
+
+### Added
+
+- `homeassistant_api: true` so agents can use read-only Core REST via `SUPERVISOR_TOKEN` (ADR-0005)
+- Create `/config/.t3code/exports/` on start for operator evidence drops
+- DOCS thin-evidence section: short Core/Supervisor REST pointers (no long Skill recipes)
+
+### Changed
+
+- Known limitations / Skills: thin REST is available; file baseline remains preferred first
+
 ## [0.3.1] - 2026-08-24
 
 ### Changed

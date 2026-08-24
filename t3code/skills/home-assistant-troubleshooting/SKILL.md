@@ -1,6 +1,6 @@
 ---
 name: home-assistant-troubleshooting
-description: Diagnose a Home Assistant problem without changing anything — unavailable entities, automations that did not fire, template errors, failing integrations, unhealthy systems. Gather thin evidence (files first, then Core/Supervisor REST when available), propose the smallest fix, and leave reload/restart/UI to the operator. Load when something is broken, missing, or behaving oddly.
+description: Diagnose a Home Assistant problem without changing anything — unavailable entities, automations that did not fire, template errors, failing integrations, unhealthy systems. Gather thin evidence (files first, then Core/Supervisor REST), propose the smallest fix, and leave reload/restart/UI to the operator. Load when something is broken, missing, or behaving oddly.
 ---
 
 # Troubleshooting Home Assistant
@@ -14,12 +14,12 @@ description: Diagnose a Home Assistant problem without changing anything — una
 Prefer this order for **runtime diagnosis**. Do not paste-dump as the happy path. Do not block a file-backed proposal when live evidence is missing.
 
 1. **File baseline** (Workspace `/config`): `home-assistant.log`, `.HA_VERSION`, read-only `.storage/` registries, YAML via `grep` / `yq` / `jq`
-2. **Core REST** (when thin plumbing is available): read-only states, history, logbook, error log
-3. **Supervisor REST** (when available): Core/add-on logs, `/resolution/info`, host/supervisor health
+2. **Core REST** — read-only states, history, logbook, `/error_log` via `http://supervisor/core/api` and `SUPERVISOR_TOKEN`
+3. **Supervisor REST** — Core container journal `/core/logs`, add-on logs, `/resolution/info`, host/supervisor health via `http://supervisor`
 
-**Fallback:** ask the operator for a short paste, or for a drop under `/config/.t3code/exports/`. Name the tier you need; do not embed long `curl` recipes here (see add-on DOCS when REST ships).
+**Fallback:** ask the operator for a short paste, or for a drop under `/config/.t3code/exports/`. Name the tier you need; short `curl` shapes live in add-on DOCS — do not paste long recipes into this Skill.
 
-This Add-on does **not** ship MCP/`hab`/service-call tools. Thin REST may not be in the running image yet — use files + fallback until it is.
+This Add-on does **not** ship MCP/`hab`/service-call tools. Thin REST is read-only evidence only.
 
 ## Keep investigation bounded
 

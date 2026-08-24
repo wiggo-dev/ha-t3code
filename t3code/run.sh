@@ -16,7 +16,8 @@ mkdir -p "${T3_STATE_DIR}" \
   "${PROVIDER_HOME}/.config" \
   "${PROVIDER_HOME}/.cache" \
   "${PROVIDER_HOME}/.local/share" \
-  "${PROVIDER_HOME}/.cursor"
+  "${PROVIDER_HOME}/.cursor" \
+  "${T3_WORKDIR}/.t3code/exports"
 
 # Workspace is HOME so ~ and default folders resolve to /config (Phase 1 behaviour).
 # Cursor auth/cache/state stay on persistent Provider home via XDG_* (ADR-0002).
