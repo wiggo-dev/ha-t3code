@@ -1,19 +1,33 @@
 ---
 name: home-assistant-configuration
-description: Write or change Home Assistant YAML — automations, scripts, scenes, templates, integrations, packages, helpers. Covers checking current docs before writing, the HA YAML style guide, reading YAML with yq, safe whole-file edits, validation, backups, and reload vs restart. Load this before editing any file under the Workspace (/config).
+description: Write or change Home Assistant YAML — automations, scripts, scenes, templates, integrations, packages, helpers. Covers checking current docs before writing, the HA YAML style guide, reading YAML with yq, safe whole-file edits, validation, backups, and telling the operator what to reload vs restart. Load this before editing any file under the Workspace (/config).
 ---
 
 # Home Assistant configuration work
 
+**Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
+
 Show the change, wait for explicit approval, change nothing else.
 
-This Add-on does **not** ship OpenCode MCP tools or `hab`. Prefer Workspace file edits, official docs, and asking the operator to reload/restart or use the HA UI when live API actions are required.
+## Thin evidence (ADR-0005 tiers)
+
+For **configuration / improvement** (nothing broken), files + current docs are enough to draft. When thin Core REST is available and a draft names entities, **recommend** (do not require) a quick existence/state check before writing.
+
+Use higher tiers only when diagnosis is needed (hand off to `home-assistant-troubleshooting`):
+
+1. **File baseline** — YAML tree, `.HA_VERSION`, read-only `.storage/` registries
+2. **Core REST** — entity existence/state (optional check when drafting)
+3. **Supervisor REST** — usually not needed for pure config work
+
+**Fallback:** operator paste or `/config/.t3code/exports/`. Do not embed long `curl` recipes in this Skill.
+
+This Add-on does **not** ship OpenCode MCP tools or `hab`. Thin REST may not be in the running image yet.
 
 ## Before you write anything
 
 Home Assistant ships a release every month. Verify syntax against the running version and current docs rather than training data.
 
-1. Note the Home Assistant version (Settings → About, or `configuration.yaml` / `.HA_VERSION` if present).
+1. Note the Home Assistant version (`.HA_VERSION`, or ask Settings → About).
 2. Read current integration docs: https://www.home-assistant.io/integrations/<domain>/
 3. Check breaking changes for that version when something failed after an update.
 4. Read the existing file in full. Every write should replace the whole file content you intend to keep.
@@ -34,7 +48,7 @@ There is no `write_config_safe` tool here. Mimic it manually:
 2. Draft the full new contents (existing + your change)
 3. Show the complete draft and wait for approval
 4. Write the complete file (never a partial fragment that drops sibling keys/list entries)
-5. Suggest validation: Developer Tools → YAML → Check Configuration, or ask the operator to run it
+5. Suggest validation: Developer Tools → YAML → Check Configuration (operator runs it)
 6. Suggest backup before large changes (Settings → System → Backups)
 
 **Never write partial content** that omits what was already in the file.
@@ -68,7 +82,7 @@ Workspace root is `/config` (also the T3 project root):
 - `configuration.yaml`, `automations.yaml`, `scripts.yaml`, `scenes.yaml`, …
 - `secrets.yaml` — never display or copy secret values
 - `packages/`, `blueprints/`, `themes/`, `www/`, `custom_components/`
-- `.storage/`, `.cloud/`, `deps/`, `tts/`, `home-assistant_v2.db`, `home-assistant.log` — do not hand-edit; use HA UI / APIs the operator controls
+- `.storage/`, `.cloud/`, `deps/`, `tts/`, `home-assistant_v2.db`, `home-assistant.log` — do not hand-edit; use HA UI the operator controls
 
 ## Creating an automation
 
@@ -76,18 +90,16 @@ Workspace root is `/config` (also the T3 project root):
 2. Draft complete YAML with comments for non-obvious bits
 3. Show the full draft; wait for approval
 4. Write the file
-5. Suggest how to test; reload automations when appropriate
+5. Suggest how the operator should test; name the reload step (they apply it)
 
 ## Applying the change
 
-Ask before reload/restart; say which is needed:
+Tell the operator which step is needed; they apply it in the UI. Never perform reload/restart yourself.
 
-| Change | What it takes |
+| Change | What the operator applies |
 | --- | --- |
 | automations / scripts / scenes YAML | Reload that domain |
 | Template entities, many helpers | Reload the domain |
 | `configuration.yaml` integration blocks | Usually a **restart** |
 | New code under `custom_components/` | **Restart** |
 | `secrets.yaml` | Restart whatever reads them |
-
-Never restart without asking.

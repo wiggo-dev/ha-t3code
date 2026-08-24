@@ -5,9 +5,21 @@ description: Develop for Home Assistant rather than only configure it — custom
 
 # Developing for Home Assistant
 
+**Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
+
 This is code, not configuration. Consent still applies. Do not hand-edit `.storage/` or other internal directories.
 
-This Add-on does **not** consume or expose OpenCode’s HA MCP server. Native HA `llm` / MCP endpoints are documented for when the operator’s Home Assistant version supports them.
+This Add-on does **not** consume or expose OpenCode’s HA MCP server. Native HA `llm` / MCP endpoints are documented for when the operator’s Home Assistant version supports them. Consuming those endpoints from T3 remains out of scope (ADR-0006).
+
+## Thin evidence (ADR-0005 tiers)
+
+Development work is mostly **files + docs**. Use higher tiers when debugging a running integration or add-on:
+
+1. **File baseline** — `custom_components/`, manifests, local add-on sources, `home-assistant.log`
+2. **Core REST** — entity/state checks after the operator reloads or restarts
+3. **Supervisor REST** — add-on logs, resolution/info, host health when diagnosing Supervisor issues
+
+**Fallback:** operator paste or `/config/.t3code/exports/`. No long `curl` recipes here. Thin REST may not be in the running image yet.
 
 ## Custom integrations
 
@@ -20,14 +32,14 @@ Check current developer docs (https://developers.home-assistant.io) for:
 - Entity naming attributes
 - `async_forward_entry_setups`
 
-**Any change under `custom_components/` needs a full Home Assistant restart.** Say so and ask.
+**Any change under `custom_components/` needs a full Home Assistant restart.** Tell the operator; never restart yourself.
 
 ## Native LLM / MCP (informational)
 
 Home Assistant can expose curated LLM tools via an integration’s `llm.py` and, on newer cores, native MCP endpoints such as `/api/mcp/assist` when the MCP Server integration is configured.
 
 - Writing `llm.py` belongs in a custom integration; this Add-on cannot register tools into HA’s llm platform
-- Consuming those endpoints from T3/Cursor is out of scope until a later MCP parity decision
+- Consuming those endpoints from T3/Cursor is out of scope (ADR-0006)
 - Prefer official HA developer docs over remembered API shapes
 
 ## Home Assistant add-ons
@@ -45,5 +57,5 @@ Add-on basics:
 
 1. Read existing code and manifests before editing
 2. Show the diff; wait for approval
-3. Remind about restart / rebuild requirements
-4. Suggest how to verify (logs, smoke config entry, Supervisor rebuild)
+3. Tell the operator about restart / rebuild requirements (they apply)
+4. Suggest how to verify (logs via file baseline or Supervisor REST when available, smoke config entry, Supervisor rebuild)

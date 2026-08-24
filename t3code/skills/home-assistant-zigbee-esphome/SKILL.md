@@ -5,25 +5,35 @@ description: Work with Zigbee and ESPHome devices in a file-first Workspace — 
 
 # Zigbee and ESPHome devices
 
-This Add-on does **not** ship `zigporter`, `hab`, or firmware-watch MCP tools. Use Workspace files, Z2M/ZHA/ESPHome configs the operator can access, and HA UI for live device/mesh/firmware actions.
+**Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself — including firmware flash and mesh repair.
+
+This Add-on does **not** ship `zigporter`, `hab`, or firmware-watch MCP tools.
+
+## Thin evidence (ADR-0005 tiers)
+
+1. **File baseline** — YAML references under `/config`, Z2M/ESPHome config the Workspace can see, `.HA_VERSION`
+2. **Core REST** — when available, entity/device state for the IDs under discussion (recommend, don’t require, for rename/draft work)
+3. **Supervisor REST** — add-on logs (Z2M, ESPHome) when diagnosing those add-ons
+
+**Fallback:** operator paste from Developer Tools / ZHA / Z2M / ESPHome UI, or drop under `/config/.t3code/exports/`. No long `curl` recipes here. Thin REST may not be in the running image yet.
+
+Signal issues (weak LQI, bad parent, offline router) usually show in ZHA/Z2M UIs — ask for that evidence rather than guessing.
 
 ## Firmware updates
 
-Guide the operator through Settings → Devices → the device’s `update.*` entity (or ESPHome Dashboard). Ask before starting; warn about power/bricking risk. Prefer a recent HA backup for large updates.
+Guide the operator through Settings → Devices → the device’s `update.*` entity (or ESPHome Dashboard). Ask before they start; warn about power/bricking risk. Prefer a recent HA backup for large updates.
 
-For Core/OS/Supervisor/add-on updates, use Settings → System → Updates — ask before starting; Core updates take the instance offline.
+For Core/OS/Supervisor/add-on updates, use Settings → System → Updates — ask before they start; Core updates take the instance offline.
 
 ## Inspecting a device
 
-Without zigporter, build the picture from:
+Build the picture from tier order:
 
-- Entity/device names the operator provides (Developer Tools → States)
 - YAML references: `grep -rn "entity_id" /config --include='*.yaml'` (and packages)
+- Entity/device state via thin Core REST when available, else operator paste (Developer Tools → States)
 - ZHA: integrations UI + device page
 - Zigbee2MQTT: its add-on config / `configuration.yaml` / network map in the Z2M UI
 - ESPHome: device YAML under the ESPHome add-on’s config path when mapped; otherwise ask the operator to paste
-
-Signal issues (weak LQI, bad parent, offline router) usually show in ZHA/Z2M UIs — ask for that evidence rather than guessing.
 
 ## Renaming
 
@@ -40,10 +50,10 @@ grep -rn "old_id" /config --include='*.yaml'
 
 ## Cleanup
 
-Stale devices, post-migration duplicates (`_2` suffixes), and mesh repair are UI/integration workflows (ZHA/Z2M). Propose steps; do not delete devices from `.storage` by hand.
+Stale devices, post-migration duplicates (`_2` suffixes), and mesh repair are UI/integration workflows (ZHA/Z2M). Propose steps for the operator; do not delete devices from `.storage` by hand.
 
 ## ESPHome
 
 - Prefer editing the device’s ESPHome YAML the operator points you at
 - Compile/upload happens in the ESPHome Dashboard / add-on — ask them to run it
-- After adopotion, entity IDs may change; re-check automations and dashboards
+- After adoption, entity IDs may change; re-check automations and dashboards

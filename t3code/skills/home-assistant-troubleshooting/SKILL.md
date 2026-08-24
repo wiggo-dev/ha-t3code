@@ -1,38 +1,50 @@
 ---
 name: home-assistant-troubleshooting
-description: Diagnose a Home Assistant problem without changing anything — unavailable entities, automations that did not fire, template errors, failing integrations, unhealthy systems. Gather evidence from files and operator-provided UI/API output, then recommend a fix. Load when something is broken, missing, or behaving oddly.
+description: Diagnose a Home Assistant problem without changing anything — unavailable entities, automations that did not fire, template errors, failing integrations, unhealthy systems. Gather thin evidence (files first, then Core/Supervisor REST when available), propose the smallest fix, and leave reload/restart/UI to the operator. Load when something is broken, missing, or behaving oddly.
 ---
 
 # Troubleshooting Home Assistant
 
-**Read-only until the user asks for a fix.** Gather evidence, explain it, propose the smallest change — and stop. Do not edit files, call services, restart, or reload while investigating.
+**Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
 
-This Add-on does **not** ship live HA MCP tools. Use Workspace files, logs the operator can share, Developer Tools, and Settings UI. Ask the operator for states/history/log excerpts when you cannot see the running system.
+**Read-only until the user asks for a fix.** Gather evidence, explain it, propose — and stop. Do not edit files while investigating.
+
+## Thin evidence (ADR-0005 tiers)
+
+Prefer this order for **runtime diagnosis**. Do not paste-dump as the happy path. Do not block a file-backed proposal when live evidence is missing.
+
+1. **File baseline** (Workspace `/config`): `home-assistant.log`, `.HA_VERSION`, read-only `.storage/` registries, YAML via `grep` / `yq` / `jq`
+2. **Core REST** (when thin plumbing is available): read-only states, history, logbook, error log
+3. **Supervisor REST** (when available): Core/add-on logs, `/resolution/info`, host/supervisor health
+
+**Fallback:** ask the operator for a short paste, or for a drop under `/config/.t3code/exports/`. Name the tier you need; do not embed long `curl` recipes here (see add-on DOCS when REST ships).
+
+This Add-on does **not** ship MCP/`hab`/service-call tools. Thin REST may not be in the running image yet — use files + fallback until it is.
 
 ## Keep investigation bounded
 
 Do not dump every entity or the entire log into context.
 
 - Start from the named entity, automation, or integration in the report
-- Prefer short time windows for history/logbook when the operator pastes them
+- Prefer short time windows for history/logbook
 - Widen search only after a narrow query finds nothing
 
 ## Order of attack
 
 1. Confirm the entity/automation/integration IDs from YAML or the report
 2. Read the relevant YAML (automations, packages, templates)
-3. Ask for or inspect: current state, recent history, logbook around the event, and error log lines for that component
+3. Gather live evidence in tier order: state, recent history, logbook around the event, error log for that component
 4. Check renames (old `entity_id` still referenced), battery/offline devices, and integration setup failures
 
 | Symptom | Next evidence |
 | --- | --- |
 | `unavailable` / `unknown` | Device/integration status; error log for that integration; `last_updated` |
-| Entity missing | Search YAML and entity registry exports for old/new IDs; integration load failures |
+| Entity missing | Search YAML and entity registry for old/new IDs; integration load failures |
 | Automation did not fire | Automation YAML; conditions vs history at trigger time; logbook for the automation |
 | Template error | Exact expression; referenced entities exist and are not `unknown` at startup |
 | Wrong value | History for the entity and its source |
 | Integration failed setup | Error log; Supervisor repairs if applicable |
-| Slow / restarting / disk | Supervisor health/metrics; recorder size; recent updates |
+| Slow / restarting / disk | Supervisor health; recorder size; recent updates |
 
 ## Common causes
 
@@ -49,4 +61,4 @@ Do not dump every entity or the entire log into context.
 
 Observed → meaning → smallest proposed fix. Separate evidence from inference. End with a concrete proposal and wait.
 
-If the fix needs configuration edits, hand off to `home-assistant-configuration` and get approval first. If it needs reload/restart, say which and why — never do it as part of investigating.
+If the fix needs configuration edits, hand off to `home-assistant-configuration` and get approval first. Tell the operator which reload/restart/UI step applies — never perform it.

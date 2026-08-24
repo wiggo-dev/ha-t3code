@@ -1,5 +1,5 @@
 name: T3 Code
-version: "0.2.1"
+version: "0.3.1"
 slug: t3code
 description: Run T3 Code in headless server mode with Server-side Cursor against Home Assistant /config
 url: https://github.com/wiggo-dev/ha-t3code/tree/main/t3code
@@ -11,6 +11,7 @@ init: false
 boot: auto
 homeassistant: 0.92.0b2
 host_network: true
+hassio_api: true
 ports:
   3773/tcp: 3773
 ports_description:
