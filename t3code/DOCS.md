@@ -41,7 +41,7 @@ On start, bundled Skills sync into `/config/.agents/skills/<name>/SKILL.md`. Ope
 
 ## Update / rebuild
 
-Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.3** in the log (`T3 Code add-on version 0.3.3`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
+Add-on store → **⋮** → **Check for updates** → open **T3 Code** → **Update** or **Rebuild** → restart. Confirm version **0.3.4** in the log (`T3 Code add-on version 0.3.4`) and the **Pin matrix** lines for `t3` and `cursor-agent`.
 
 Update/Rebuild is the only supported upgrade path for the pin matrix. Previous Add-on version is break-glass. Do not run `agent update` or `npm install -g t3` inside the container.
 
