@@ -7,7 +7,9 @@ description: Build or change Home Assistant dashboards — Lovelace views, cards
 
 **Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
 
-This Add-on does **not** ship `hab` dashboard CLI or screenshot MCP tools. Work through YAML-mode files when available; for storage-mode dashboards, guide the operator via the HA UI (or raw `.storage` only if they explicitly accept that risk).
+**Evidence shell:** `yq`, `grep`, `jq`, and read-only `curl` to Core/Supervisor REST (`SUPERVISOR_TOKEN`). That is the full set — do not probe PATH for other HA CLIs.
+
+Work through YAML-mode files when available; for storage-mode dashboards, guide the operator via the HA UI (or raw `.storage` only if they explicitly accept that risk). Visual checks are operator-reported (open the dashboard) — no screenshot tooling.
 
 ## Thin evidence (ADR-0005 tiers)
 
