@@ -7,7 +7,7 @@ description: Work with Zigbee and ESPHome devices in a file-first Workspace — 
 
 **Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself — including firmware flash and mesh repair.
 
-This Add-on does **not** ship `zigporter`, `hab`, or firmware-watch MCP tools.
+**Evidence shell:** `yq`, `grep`, `jq`, and read-only `curl` to Core/Supervisor REST (`SUPERVISOR_TOKEN`). That is the full set — do not probe PATH for other HA CLIs. Firmware, mesh, and device UIs stay with the operator.
 
 ## Thin evidence (ADR-0005 tiers)
 

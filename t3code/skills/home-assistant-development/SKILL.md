@@ -7,9 +7,9 @@ description: Develop for Home Assistant rather than only configure it — custom
 
 **Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
 
-This is code, not configuration. Consent still applies. Do not hand-edit `.storage/` or other internal directories.
+**Evidence shell:** `yq`, `grep`, `jq`, and read-only `curl` to Core/Supervisor REST (`SUPERVISOR_TOKEN`). That is the full set — do not probe PATH for other HA CLIs.
 
-This Add-on does **not** consume or expose OpenCode’s HA MCP server. Native HA `llm` / MCP endpoints are documented for when the operator’s Home Assistant version supports them. Consuming those endpoints from T3 remains out of scope (ADR-0006).
+This is code, not configuration. Consent still applies. Do not hand-edit `.storage/` or other internal directories. Tooling stays files + thin REST (ADR-0006); native HA `llm` / MCP notes below are informational only.
 
 ## Thin evidence (ADR-0005 tiers)
 

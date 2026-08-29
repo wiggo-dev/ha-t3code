@@ -7,6 +7,8 @@ description: Write or change Home Assistant YAML — automations, scripts, scene
 
 **Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
 
+**Evidence shell:** `yq`, `grep`, `jq`, and read-only `curl` to Core/Supervisor REST (`SUPERVISOR_TOKEN`). That is the full set — do not probe PATH for other HA CLIs.
+
 Show the change, wait for explicit approval, change nothing else.
 
 ## Thin evidence (ADR-0005 tiers)
@@ -19,9 +21,7 @@ Use higher tiers only when diagnosis is needed (hand off to `home-assistant-trou
 2. **Core REST** — entity existence/state (optional check when drafting)
 3. **Supervisor REST** — usually not needed for pure config work
 
-**Fallback:** operator paste or `/config/.t3code/exports/`. Short recipes: add-on DOCS — do not embed long `curl` blocks here.
-
-This Add-on does **not** ship OpenCode MCP tools or `hab`. Thin REST is read-only evidence only.
+**Fallback:** operator paste or `/config/.t3code/exports/`. Short recipes: add-on DOCS — do not embed long `curl` blocks here. Thin REST is read-only evidence only.
 
 ## Before you write anything
 
@@ -86,11 +86,15 @@ Workspace root is `/config` (also the T3 project root):
 
 ## Creating an automation
 
-1. Read the whole existing automations file or package
-2. Draft complete YAML with comments for non-obvious bits
-3. Show the full draft; wait for approval
-4. Write the file
-5. Suggest how the operator should test; name the reload step (they apply it)
+Inventory first from the Workspace (and optionally Core REST), then edit:
+
+1. List existing automations with `yq` / `grep` on `automations.yaml` and `packages/` (ids, aliases, entity_ids)
+2. Optional live check: Core REST states for `automation.*` (short `curl` shapes in add-on DOCS)
+3. Read the whole existing automations file or package
+4. Draft complete YAML with comments for non-obvious bits
+5. Show the full draft; wait for approval
+6. Write the file
+7. Suggest how the operator should test; name the reload step (they apply it)
 
 ## Applying the change
 

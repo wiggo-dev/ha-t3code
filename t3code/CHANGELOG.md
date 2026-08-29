@@ -7,6 +7,12 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.5] - 2026-08-29
+
+### Changed
+
+- Home Assistant Skills: positive **Evidence shell** allowlist (`yq` / `grep` / `jq` / read-only Core/Supervisor REST) so agents stop probing for absent HA CLIs; inventory automations via Workspace files + optional REST
+
 ## [0.3.4] - 2026-08-26
 
 ### Changed

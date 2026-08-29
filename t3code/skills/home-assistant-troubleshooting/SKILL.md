@@ -7,6 +7,8 @@ description: Diagnose a Home Assistant problem without changing anything — una
 
 **Operator loop:** ask → gather thin evidence → propose the smallest change → operator approves edits and applies reload/restart/UI. Never call services, reload, restart, or control devices yourself.
 
+**Evidence shell:** `yq`, `grep`, `jq`, and read-only `curl` to Core/Supervisor REST (`SUPERVISOR_TOKEN`). That is the full set — do not probe PATH for other HA CLIs.
+
 **Read-only until the user asks for a fix.** Gather evidence, explain it, propose — and stop. Do not edit files while investigating.
 
 ## Thin evidence (ADR-0005 tiers)
@@ -17,9 +19,7 @@ Prefer this order for **runtime diagnosis**. Do not paste-dump as the happy path
 2. **Core REST** — read-only states, history, logbook, `/error_log` via `http://supervisor/core/api` and `SUPERVISOR_TOKEN`
 3. **Supervisor REST** — Core container journal `/core/logs` (needs `hassio_role: homeassistant`), `/resolution/info`, other allowed `GET`s via `http://supervisor`. Prefer Core `/api/error_log` for integration/YAML failures. Do **not** POST restart/stop/update.
 
-**Fallback:** ask the operator for a short paste, or for a drop under `/config/.t3code/exports/`. Name the tier you need; short `curl` shapes live in add-on DOCS — do not paste long recipes into this Skill.
-
-This Add-on does **not** ship MCP/`hab`/service-call tools. Thin REST is read-only evidence only.
+**Fallback:** ask the operator for a short paste, or for a drop under `/config/.t3code/exports/`. Name the tier you need; short `curl` shapes live in add-on DOCS — do not paste long recipes into this Skill. Thin REST is read-only evidence only.
 
 ## Keep investigation bounded
 
@@ -31,9 +31,9 @@ Do not dump every entity or the entire log into context.
 
 ## Order of attack
 
-1. Confirm the entity/automation/integration IDs from YAML or the report
+1. Confirm the entity/automation/integration IDs from YAML (`yq` / `grep`) or the report — not from unknown CLIs
 2. Read the relevant YAML (automations, packages, templates)
-3. Gather live evidence in tier order: state, recent history, logbook around the event, error log for that component
+3. Gather live evidence in tier order via Core/Supervisor REST: state, recent history, logbook around the event, error log for that component
 4. Check renames (old `entity_id` still referenced), battery/offline devices, and integration setup failures
 
 | Symptom | Next evidence |
