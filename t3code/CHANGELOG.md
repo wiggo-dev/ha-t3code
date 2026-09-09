@@ -7,6 +7,12 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.7] - 2026-09-09
+
+### Fixed
+
+- Install `git` in the image so T3’s `GitVcsDriver` probe can spawn (avoids `VCS process failed to spawn … git (/config)` on threads after t3 0.0.40)
+
 ## [0.3.6] - 2026-09-09
 
 ### Changed

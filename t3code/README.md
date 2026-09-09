@@ -30,8 +30,8 @@ LAN pairing behaviour is unchanged from Phase 1.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.3.6**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.3.6` plus **Pin matrix** lines for `t3` and `cursor-agent`
+2. Open **T3 Code**, confirm version (**0.3.7**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.3.7` plus **Pin matrix** lines for `t3` and `cursor-agent`
 
 That Update/Rebuild is the **only** supported way to change the pin matrix. Previous Add-on version is break-glass rollback. Do not run `agent update` or `npm install -g t3` inside the container.
 
