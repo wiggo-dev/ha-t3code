@@ -30,6 +30,7 @@ RUN set -x \
     tar \
     xz-utils \
     bash \
+    git \
     jq \
     python3 \
     make \
@@ -47,6 +48,7 @@ RUN set -x \
   && curl -fsSL "https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_${YQ_ARCH}" \
     -o /usr/local/bin/yq \
   && chmod +x /usr/local/bin/yq \
+  && git --version \
   && node --version \
   && npm --version \
   && npm install -g "t3@${T3_VERSION}" \
