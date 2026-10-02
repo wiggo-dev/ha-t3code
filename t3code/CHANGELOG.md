@@ -7,6 +7,12 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.8] - 2026-10-02
+
+### Changed
+
+- Pin matrix: t3 0.0.45, Cursor CLI 2026.10.01-e373342
+
 ## [0.3.7] - 2026-09-09
 
 ### Fixed
