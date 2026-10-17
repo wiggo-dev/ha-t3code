@@ -30,8 +30,8 @@ LAN pairing behaviour is unchanged from Phase 1.
 ## Update after repo changes
 
 1. Add-on store → **⋮** → **Check for updates**
-2. Open **T3 Code**, confirm version (**0.3.9**), **Update** or **Rebuild**, restart
-3. Startup log should show `T3 Code add-on version 0.3.9` plus **Pin matrix** lines for `t3` and `cursor-agent`
+2. Open **T3 Code**, confirm version (**0.3.10**), **Update** or **Rebuild**, restart
+3. Startup log should show `T3 Code add-on version 0.3.10` plus **Pin matrix** lines for `t3` and `cursor-agent`
 
 That Update/Rebuild is the **only** supported way to change the pin matrix. Previous Add-on version is break-glass rollback. Do not run `agent update` or `npm install -g t3` inside the container.
 
@@ -112,7 +112,7 @@ T3 Code Desktop App (LAN or Tailscale)
 Home Assistant host :3773
         │
         ▼
-Add-on: t3 start … /config
+Add-on: t3 serve … /config
         │
         ├── /config              ← Workspace (+ HOME / `~`)
         ├── /config/.t3code/exports/  ← operator evidence drops
@@ -146,6 +146,10 @@ Image installs Node, T3, and Cursor on Debian. Check npm/Cursor download errors 
 - Host network binds on the HA LAN IP (or Tailscale IP when the host is on the mesh)
 - Set **advertise_host** if logs show a Docker-internal address, or for off-LAN Tailscale MagicDNS/IP
 - Confirm `<advertise_host>:3773` is reachable from the desktop (LAN or same tailnet)
+
+### `A T3 Code server is already running`
+
+Add-on **0.3.10+** clears a stale `server-runtime.json` lease on start (PID reuse after restart). If an older build still fails, Stop the add-on, delete `/data/t3/userdata/server-runtime.json` from the add-on Terminal (or host add-on data dir), then Start again. Pair with the LAN host from the log — never `127.0.0.1`.
 
 ## Known limitations
 

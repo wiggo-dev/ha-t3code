@@ -152,6 +152,42 @@ sync_home_assistant_skills() {
   fi
 }
 
+# /data/t3 persists across container recreates. t3 refuses to start when
+# server-runtime.json names a live PID — after a restart that PID is often
+# reused by an unrelated process, which blocks startup with a false
+# "already running" error. This entrypoint owns the only T3 server in the
+# container, so clear leftover leases (and stop a real leftover t3) first.
+clear_stale_server_lease() {
+  local runtime_state="${T3_STATE_DIR}/userdata/server-runtime.json"
+  local stale_pid=""
+  local args=""
+  local waited=0
+
+  [[ -f "${runtime_state}" ]] || return 0
+
+  stale_pid="$(jq -r '.pid // empty' "${runtime_state}" 2>/dev/null || true)"
+  if [[ -n "${stale_pid}" ]] && kill -0 "${stale_pid}" 2>/dev/null; then
+    args="$(ps -p "${stale_pid}" -o args= 2>/dev/null || true)"
+    if printf '%s' "${args}" | grep -qE '(^|[[:space:]/])t3([[:space:]]|$)'; then
+      bashio::log.warning "Stopping leftover T3 server (pid ${stale_pid}) from a previous run"
+      kill -TERM "${stale_pid}" 2>/dev/null || true
+      while kill -0 "${stale_pid}" 2>/dev/null && [[ "${waited}" -lt 5 ]]; do
+        sleep 1
+        waited=$((waited + 1))
+      done
+      if kill -0 "${stale_pid}" 2>/dev/null; then
+        bashio::log.warning "Leftover T3 server pid ${stale_pid} did not exit; sending KILL"
+        kill -KILL "${stale_pid}" 2>/dev/null || true
+      fi
+    else
+      bashio::log.warning "Clearing stale server-runtime.json (pid ${stale_pid} is not a T3 server)"
+    fi
+  else
+    bashio::log.info "Clearing stale server-runtime.json (previous pid ${stale_pid:-unknown} is gone)"
+  fi
+  rm -f "${runtime_state}"
+}
+
 ADVERTISE_HOST="$(resolve_advertise_host || true)"
 
 bashio::log.info "T3 Code add-on version $(bashio::addon.version 2>/dev/null || echo 'dev')"
@@ -179,6 +215,7 @@ fi
 
 sync_home_assistant_skills
 log_cursor_auth_status
+clear_stale_server_lease
 
 bashio::log.info "Pairing URL and token will appear below once the server is ready"
 
@@ -187,7 +224,7 @@ print_pairing_info &
 cd "${T3_WORKDIR}"
 
 T3_ARGS=(
-  start
+  serve
   --host "${T3_HOST}"
   --port "${T3_PORT}"
   --base-dir "${T3_STATE_DIR}"

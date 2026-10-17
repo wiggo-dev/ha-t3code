@@ -7,6 +7,13 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for **add-on releases** (`config.yaml` `version`). Nested T3/Cursor pin bumps are
 mentioned only when they matter to operators.
 
+## [0.3.10] - 2026-10-17
+
+### Fixed
+
+- Clear a stale `/data/t3/userdata/server-runtime.json` lease on start so a reused PID after container restart cannot block with `A T3 Code server is already running`
+- Run headless via `t3 serve` (foreground) instead of `t3 start`
+
 ## [0.3.9] - 2026-10-16
 
 ### Changed
